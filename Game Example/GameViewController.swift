@@ -11,6 +11,7 @@ import SceneKit
 
 class GameViewController: UIViewController {
     
+    let label = UILabel()
     var ship: SCNNode!
     var scene: SCNScene!
     var scnView: SCNView!
@@ -74,6 +75,12 @@ class GameViewController: UIViewController {
         
         // Add ship to the scene
         scnView.scene?.rootNode.addChildNode(getShip())
+        
+        // Add label to the scene view
+        scnView.addSubview(label)
+        label.frame = CGRect(x: 0, y: 0, width: scnView.frame.width, height: 50)
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 30)
     }
     
     func getShip() -> SCNNode {
@@ -84,7 +91,12 @@ class GameViewController: UIViewController {
         ship.position.z = -105
         
         // Add ship animation
-        ship.runAction(.move(to: SCNVector3(), duration: 5))
+        ship.runAction(.move(to: SCNVector3(), duration: 5)) {
+            ship.removeFromParentNode()
+            DispatchQueue.main.async {
+                self.label.text = "Game Over"
+            }
+        }
         
         return ship
     }
