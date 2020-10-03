@@ -74,13 +74,18 @@ class GameViewController: UIViewController {
         scnView.addGestureRecognizer(tapGesture)
         
         // Add ship to the scene
-        scnView.scene?.rootNode.addChildNode(getShip())
+        ship = getShip()
+        addShip()
         
         // Add label to the scene view
         scnView.addSubview(label)
         label.frame = CGRect(x: 0, y: 0, width: scnView.frame.width, height: 50)
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 30)
+    }
+    
+    func addShip() {
+        scnView.scene?.rootNode.addChildNode(ship)
     }
     
     func getShip() -> SCNNode {
@@ -123,16 +128,14 @@ class GameViewController: UIViewController {
             
             // highlight it
             SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.5
+            SCNTransaction.animationDuration = 0.2
             
             // on completion - unhighlight
             SCNTransaction.completionBlock = {
-                SCNTransaction.begin()
-                SCNTransaction.animationDuration = 0.5
-                
-                material.emission.contents = UIColor.black
-                
-                SCNTransaction.commit()
+                self.ship.removeAllActions()
+                self.ship.removeFromParentNode()
+                self.ship = self.getShip()
+                self.addShip()
             }
             
             material.emission.contents = UIColor.red
