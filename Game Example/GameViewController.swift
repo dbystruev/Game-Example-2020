@@ -11,8 +11,11 @@ import SceneKit
 
 class GameViewController: UIViewController {
     
+    // MARK: - Properties
     let button = UIButton()
     let label = UILabel()
+    
+    var duration: TimeInterval = 5
     
     var score = 0 {
         didSet {
@@ -26,6 +29,7 @@ class GameViewController: UIViewController {
     var scene: SCNScene!
     var scnView: SCNView!
 
+    // MARK: - Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -123,10 +127,14 @@ class GameViewController: UIViewController {
         let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!.clone()
         
         // Move ship out of view
-        ship.position.z = -105
+        let x = Int.random(in: -25...25)
+        let y = Int.random(in: -25...25)
+        let z = -105
+        ship.position = SCNVector3(x, y, z)
+        ship.look(at: SCNVector3(2 * x, 2 * y, 2 * z))
         
         // Add ship animation
-        ship.runAction(.move(to: SCNVector3(), duration: 5)) {
+        ship.runAction(.move(to: SCNVector3(), duration: duration)) {
             ship.removeFromParentNode()
             DispatchQueue.main.async {
                 self.button.isHidden = false
@@ -141,7 +149,9 @@ class GameViewController: UIViewController {
         scene?.rootNode.childNode(withName: "ship", recursively: true)?.removeFromParentNode()
     }
     
+    // MARK: - Actions
     @objc func newGame() {
+        duration = 5
         score = 0
         button.isHidden = true
         ship = getShip()
@@ -172,6 +182,7 @@ class GameViewController: UIViewController {
             SCNTransaction.completionBlock = {
                 self.ship.removeAllActions()
                 self.ship.removeFromParentNode()
+                self.duration *= 0.95
                 self.ship = self.getShip()
                 self.addShip()
                 self.score += 1
@@ -183,6 +194,7 @@ class GameViewController: UIViewController {
         }
     }
     
+    // MARK: - Computed Properties
     override var shouldAutorotate: Bool {
         return true
     }
