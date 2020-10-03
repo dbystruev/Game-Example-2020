@@ -11,7 +11,17 @@ import SceneKit
 
 class GameViewController: UIViewController {
     
+    let button = UIButton()
     let label = UILabel()
+    
+    var score = 0 {
+        didSet {
+            DispatchQueue.main.async {
+                self.label.text = "Score: \(self.score)"
+            }
+        }
+    }
+    
     var ship: SCNNode!
     var scene: SCNScene!
     var scnView: SCNView!
@@ -78,10 +88,30 @@ class GameViewController: UIViewController {
         addShip()
         
         // Add label to the scene view
-        scnView.addSubview(label)
-        label.frame = CGRect(x: 0, y: 0, width: scnView.frame.width, height: 50)
+        label.frame = CGRect(x: 0, y: 0, width: scnView.frame.width, height: 100)
+        label.numberOfLines = 2
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 30)
+        scnView.addSubview(label)
+        
+        // Add button to the scene view
+        let midX = scnView.frame.midX
+        let midY = scnView.frame.midY
+        let width = CGFloat(200)
+        let height = CGFloat(100)
+        button.addTarget(self,
+                         action: #selector(newGame),
+                         for: .touchUpInside)
+        button.backgroundColor = .red
+        button.layer.cornerRadius = 15
+        button.frame = CGRect(x: midX - width / 2,
+                              y: midY - height / 2,
+                              width: width,
+                              height: height)
+        button.isHidden = true
+        button.setTitle("Restart", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 40)
+        scnView.addSubview(button)
     }
     
     func addShip() {
@@ -99,7 +129,8 @@ class GameViewController: UIViewController {
         ship.runAction(.move(to: SCNVector3(), duration: 5)) {
             ship.removeFromParentNode()
             DispatchQueue.main.async {
-                self.label.text = "Game Over"
+                self.button.isHidden = false
+                self.label.text = "Game Over\nScore: \(self.score)"
             }
         }
         
@@ -108,6 +139,13 @@ class GameViewController: UIViewController {
     
     func removeShip() {
         scene?.rootNode.childNode(withName: "ship", recursively: true)?.removeFromParentNode()
+    }
+    
+    @objc func newGame() {
+        score = 0
+        button.isHidden = true
+        ship = getShip()
+        addShip()
     }
     
     @objc
@@ -136,6 +174,7 @@ class GameViewController: UIViewController {
                 self.ship.removeFromParentNode()
                 self.ship = self.getShip()
                 self.addShip()
+                self.score += 1
             }
             
             material.emission.contents = UIColor.red
