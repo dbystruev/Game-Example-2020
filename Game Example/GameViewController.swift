@@ -10,12 +10,16 @@ import QuartzCore
 import SceneKit
 
 class GameViewController: UIViewController {
+    
+    var ship: SCNNode!
+    var scene: SCNScene!
+    var scnView: SCNView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        scene = SCNScene(named: "art.scnassets/ship.scn")!
         
         // create and add a camera to the scene
         let cameraNode = SCNNode()
@@ -23,7 +27,7 @@ class GameViewController: UIViewController {
         scene.rootNode.addChildNode(cameraNode)
         
         // place the camera
-        cameraNode.position = SCNVector3(x: 0, y: 0, z: 15)
+        cameraNode.position = SCNVector3(x: 0, y: 0, z: 0)
         
         // create and add a light to the scene
         let lightNode = SCNNode()
@@ -40,13 +44,20 @@ class GameViewController: UIViewController {
         scene.rootNode.addChildNode(ambientLightNode)
         
         // retrieve the ship node
-        let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!
+        ship = scene.rootNode.childNode(withName: "ship", recursively: true)!
+        
+        // change ship position
+        ship.position.z = -15
         
         // animate the 3d object
-        ship.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
+//        ship.runAction(
+//            SCNAction.repeatForever(
+//                SCNAction.rotateBy(x: 0, y: 2 * .pi, z: 0, duration: 1)
+//            )
+//        )
         
         // retrieve the SCNView
-        let scnView = self.view as! SCNView
+        scnView = view as? SCNView
         
         // set the scene to the view
         scnView.scene = scene
@@ -63,6 +74,25 @@ class GameViewController: UIViewController {
         // add a tap gesture recognizer
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         scnView.addGestureRecognizer(tapGesture)
+        
+        // Add ship to the scene
+        scnView.scene?.rootNode.addChildNode(getShip())
+    }
+    
+    func getShip() -> SCNNode {
+        let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!.clone()
+        
+        // Move ship out of view
+        ship.position.z = -105
+        
+        // Add ship animation
+        ship.runAction(.move(to: SCNVector3(), duration: 5))
+        
+        return ship
+    }
+    
+    func removeShip() {
+        scnView.scene?.rootNode.childNode(withName: "ship", recursively: true)?.removeFromParentNode()
     }
     
     @objc
